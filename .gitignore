@@ -1,0 +1,37 @@
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# Environment
+.env
+.env.local
+.env.production
+.env.staging
+
+# TypeORM cache
+.typeorm/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+
+# OS
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# IDE
+.vscode/
+.idea/
+
+# Test coverage
+coverage/
+
+# TypeScript incremental cache
+*.tsbuildinfo
+
+# Postman (optional — remove this line if you want to commit the collection)
+# postman/
