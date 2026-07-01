@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
@@ -104,7 +105,6 @@ export class AuthService {
     const stored = await this.refreshTokenRepo.findOne({
       where: { user: { id: payload.sub }, revoked: false },
       relations: { user: true },
-
       order: { expiresAt: 'DESC' },
     });
 
@@ -128,7 +128,6 @@ export class AuthService {
     stored.revoked = true;
     await this.refreshTokenRepo.save(stored);
 
-    // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
     const user = await this.usersService.findById(payload.sub);
     const tokens = await this.generateTokens(user);
     return tokens;

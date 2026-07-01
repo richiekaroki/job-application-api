@@ -9,6 +9,9 @@ import { HealthController } from './health.controller';
 import { RedisModule } from './redis/redis.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { JobsModule } from './jobs/jobs.module';
+import { ApplicationsModule } from './applications/applications.module';
+import { AdminModule } from './admin/admin.module';
 
 @Module({
   imports: [
@@ -35,6 +38,9 @@ import { AuthModule } from './auth/auth.module';
     RedisModule,
     UsersModule,
     AuthModule,
+    JobsModule,
+    ApplicationsModule,
+    AdminModule,
   ],
   controllers: [HealthController],
 })
