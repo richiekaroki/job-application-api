@@ -1,0 +1,487 @@
+{
+  "info": {
+    "name": "Job Applications API",
+    "description": "Production-grade API for managing job postings, applications, and recruitment workflows. Built as a portfolio project for the Junior API Developer role at WizGlobal.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_postman_id": "job-applications-api-collection"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://localhost:3000/api/v1", "type": "string" },
+    { "key": "access_token", "value": "", "type": "string" },
+    { "key": "refresh_token", "value": "", "type": "string" },
+    { "key": "job_id", "value": "", "type": "string" },
+    { "key": "application_id", "value": "", "type": "string" },
+    { "key": "user_id", "value": "", "type": "string" }
+  ],
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"applicant@jobapi.dev\",\n  \"password\": \"Password123!\",\n  \"fullName\": \"John Applicant\",\n  \"role\": \"applicant\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/auth/register" } },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"data\": {\n    \"email\": \"applicant@jobapi.dev\",\n    \"role\": \"applicant\",\n    \"fullName\": \"John Applicant\",\n    \"id\": \"uuid\",\n    \"createdAt\": \"2026-06-16T10:00:00.000Z\"\n  },\n  \"meta\": null,\n  \"error\": null\n}"
+            },
+            {
+              "name": "409 Email Taken",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/auth/register" } },
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"data\": null,\n  \"meta\": null,\n  \"error\": {\n    \"code\": \"EMAIL_TAKEN\",\n    \"message\": \"An account with this email already exists.\",\n    \"statusCode\": 409\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('access_token', json.data.accessToken);",
+                  "  pm.collectionVariables.set('refresh_token', json.data.refreshToken);",
+                  "  pm.collectionVariables.set('user_id', json.data.user.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"applicant@jobapi.dev\",\n  \"password\": \"Password123!\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/auth/login", "host": ["{{base_url}}"], "path": ["auth", "login"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/auth/login" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": {\n    \"user\": { \"id\": \"uuid\", \"email\": \"applicant@jobapi.dev\", \"role\": \"applicant\", \"fullName\": \"John Applicant\" },\n    \"accessToken\": \"eyJhbGciOi...\",\n    \"refreshToken\": \"eyJhbGciOi...\"\n  },\n  \"meta\": null,\n  \"error\": null\n}"
+            },
+            {
+              "name": "401 Invalid Credentials",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/auth/login" } },
+              "status": "Unauthorized",
+              "code": 401,
+              "body": "{\n  \"data\": null,\n  \"meta\": null,\n  \"error\": {\n    \"code\": \"INVALID_CREDENTIALS\",\n    \"message\": \"Invalid email or password.\",\n    \"statusCode\": 401\n  }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "  const json = pm.response.json();",
+                  "  pm.collectionVariables.set('access_token', json.data.accessToken);",
+                  "  pm.collectionVariables.set('refresh_token', json.data.refreshToken);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Content-Type", "value": "application/json" }],
+            "body": { "mode": "raw", "raw": "{\n  \"refreshToken\": \"{{refresh_token}}\"\n}" },
+            "url": { "raw": "{{base_url}}/auth/refresh", "host": ["{{base_url}}"], "path": ["auth", "refresh"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/auth/refresh" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": { \"accessToken\": \"eyJhbGciOi...\", \"refreshToken\": \"eyJhbGciOi...\" },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Logout",
+          "request": {
+            "method": "POST",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/auth/logout", "host": ["{{base_url}}"], "path": ["auth", "logout"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/auth/logout" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": { \"message\": \"Logged out successfully.\" },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Jobs",
+      "item": [
+        {
+          "name": "List Jobs (public, paginated, filtered)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{base_url}}/jobs?page=1&limit=10&status=open",
+              "host": ["{{base_url}}"],
+              "path": ["jobs"],
+              "query": [
+                { "key": "page", "value": "1" },
+                { "key": "limit", "value": "10" },
+                { "key": "title", "value": "developer", "disabled": true },
+                { "key": "location", "value": "Nairobi", "disabled": true },
+                { "key": "status", "value": "open" },
+                { "key": "postedAfter", "value": "2026-01-01", "disabled": true }
+              ]
+            }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "GET", "url": { "raw": "{{base_url}}/jobs" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [ { \"id\": \"uuid\", \"title\": \"Junior API Developer\", \"location\": \"Nairobi, Kenya\", \"status\": \"open\" } ],\n  \"meta\": { \"page\": 1, \"limit\": 10, \"total\": 1, \"totalPages\": 1 },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Get Job by ID (public)",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/jobs/{{job_id}}", "host": ["{{base_url}}"], "path": ["jobs", "{{job_id}}"] }
+          },
+          "response": [
+            {
+              "name": "404 Not Found",
+              "originalRequest": { "method": "GET", "url": { "raw": "{{base_url}}/jobs/{{job_id}}" } },
+              "status": "Not Found",
+              "code": 404,
+              "body": "{\n  \"data\": null,\n  \"meta\": null,\n  \"error\": { \"code\": \"JOB_NOT_FOUND\", \"message\": \"Job not found.\", \"statusCode\": 404 }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Create Job (employer+)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('job_id', pm.response.json().data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"title\": \"Junior API Developer\",\n  \"description\": \"Build and maintain RESTful APIs using Node.js and NestJS.\",\n  \"location\": \"Nairobi, Kenya\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/jobs", "host": ["{{base_url}}"], "path": ["jobs"] }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/jobs" } },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"data\": { \"id\": \"uuid\", \"title\": \"Junior API Developer\", \"status\": \"open\" },\n  \"meta\": null,\n  \"error\": null\n}"
+            },
+            {
+              "name": "403 Forbidden",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/jobs" } },
+              "status": "Forbidden",
+              "code": 403,
+              "body": "{\n  \"data\": null,\n  \"meta\": null,\n  \"error\": { \"code\": \"FORBIDDEN\", \"message\": \"Forbidden resource\", \"statusCode\": 403 }\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Job (employer+, own jobs only)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"closed\"\n}" },
+            "url": { "raw": "{{base_url}}/jobs/{{job_id}}", "host": ["{{base_url}}"], "path": ["jobs", "{{job_id}}"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "PATCH", "url": { "raw": "{{base_url}}/jobs/{{job_id}}" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": { \"id\": \"uuid\", \"status\": \"closed\" },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Delete Job (employer+, own jobs only)",
+          "request": {
+            "method": "DELETE",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/jobs/{{job_id}}", "host": ["{{base_url}}"], "path": ["jobs", "{{job_id}}"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "DELETE", "url": { "raw": "{{base_url}}/jobs/{{job_id}}" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": { \"message\": \"Job deleted successfully.\" },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Applications",
+      "item": [
+        {
+          "name": "Apply to Job (applicant only)",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "exec": [
+                  "if (pm.response.code === 201) {",
+                  "  pm.collectionVariables.set('application_id', pm.response.json().data.id);",
+                  "}"
+                ],
+                "type": "text/javascript"
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"coverLetter\": \"I am excited to apply for this role. I have strong experience building RESTful APIs with NestJS and TypeScript.\"\n}"
+            },
+            "url": { "raw": "{{base_url}}/applications/{{job_id}}/apply", "host": ["{{base_url}}"], "path": ["applications", "{{job_id}}", "apply"] }
+          },
+          "response": [
+            {
+              "name": "201 Created",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/applications/{{job_id}}/apply" } },
+              "status": "Created",
+              "code": 201,
+              "body": "{\n  \"data\": { \"id\": \"uuid\", \"status\": \"pending\" },\n  \"meta\": null,\n  \"error\": null\n}"
+            },
+            {
+              "name": "409 Already Applied",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/applications/{{job_id}}/apply" } },
+              "status": "Conflict",
+              "code": 409,
+              "body": "{\n  \"data\": null,\n  \"meta\": null,\n  \"error\": { \"code\": \"ALREADY_APPLIED\", \"message\": \"You have already applied for this job.\", \"statusCode\": 409 }\n}"
+            }
+          ]
+        },
+        {
+          "name": "List My Applications (applicant)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/applications/mine?page=1&limit=10", "host": ["{{base_url}}"], "path": ["applications", "mine"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "GET", "url": { "raw": "{{base_url}}/applications/mine" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [ { \"id\": \"uuid\", \"status\": \"pending\", \"job\": { \"title\": \"Junior API Developer\" } } ],\n  \"meta\": { \"page\": 1, \"limit\": 10, \"total\": 1, \"totalPages\": 1 },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "List All Applications (recruiter+)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/applications?page=1&limit=10", "host": ["{{base_url}}"], "path": ["applications"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "GET", "url": { "raw": "{{base_url}}/applications" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [ { \"id\": \"uuid\", \"status\": \"pending\", \"applicant\": { \"fullName\": \"John Applicant\" } } ],\n  \"meta\": { \"page\": 1, \"limit\": 10, \"total\": 1, \"totalPages\": 1 },\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update Application Status (recruiter+)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"status\": \"shortlisted\"\n}" },
+            "url": { "raw": "{{base_url}}/applications/{{application_id}}/status", "host": ["{{base_url}}"], "path": ["applications", "{{application_id}}", "status"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "PATCH", "url": { "raw": "{{base_url}}/applications/{{application_id}}/status" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": { \"id\": \"uuid\", \"status\": \"shortlisted\", \"reviewedBy\": { \"fullName\": \"Jane Recruiter\" } },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Webhooks",
+      "item": [
+        {
+          "name": "Register Webhook URL (employer+)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"webhookUrl\": \"https://webhook.site/your-unique-id\"\n}" },
+            "url": { "raw": "{{base_url}}/webhooks/register", "host": ["{{base_url}}"], "path": ["webhooks", "register"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/webhooks/register" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": { \"webhookUrl\": \"https://webhook.site/your-unique-id\" },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "View Delivery Logs (employer+)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/webhooks/logs?page=1&limit=10", "host": ["{{base_url}}"], "path": ["webhooks", "logs"], "query": [{ "key": "page", "value": "1" }, { "key": "limit", "value": "10" }] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "GET", "url": { "raw": "{{base_url}}/webhooks/logs" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [ { \"id\": \"uuid\", \"eventType\": \"application.status_changed\", \"statusCode\": 200 } ],\n  \"meta\": { \"page\": 1, \"limit\": 10, \"total\": 1, \"totalPages\": 1 },\n  \"error\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Admin",
+      "item": [
+        {
+          "name": "List All Users (super_admin only)",
+          "request": {
+            "method": "GET",
+            "header": [{ "key": "Authorization", "value": "Bearer {{access_token}}" }],
+            "url": { "raw": "{{base_url}}/admin/users", "host": ["{{base_url}}"], "path": ["admin", "users"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "GET", "url": { "raw": "{{base_url}}/admin/users" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": [ { \"id\": \"uuid\", \"email\": \"applicant@jobapi.dev\", \"role\": \"applicant\" } ],\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        },
+        {
+          "name": "Update User Role (super_admin only)",
+          "request": {
+            "method": "PATCH",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" },
+              { "key": "Authorization", "value": "Bearer {{access_token}}" }
+            ],
+            "body": { "mode": "raw", "raw": "{\n  \"role\": \"recruiter\"\n}" },
+            "url": { "raw": "{{base_url}}/admin/users/{{user_id}}/role", "host": ["{{base_url}}"], "path": ["admin", "users", "{{user_id}}", "role"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "PATCH", "url": { "raw": "{{base_url}}/admin/users/{{user_id}}/role" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"data\": { \"id\": \"uuid\", \"role\": \"recruiter\" },\n  \"meta\": null,\n  \"error\": null\n}"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Health",
+      "item": [
+        {
+          "name": "Health Check",
+          "request": {
+            "method": "GET",
+            "url": { "raw": "{{base_url}}/health", "host": ["{{base_url}}"], "path": ["health"] }
+          },
+          "response": [
+            {
+              "name": "200 OK",
+              "originalRequest": { "method": "GET", "url": { "raw": "{{base_url}}/health" } },
+              "status": "OK",
+              "code": 200,
+              "body": "{\n  \"status\": \"ok\",\n  \"timestamp\": \"2026-06-16T10:00:00.000Z\"\n}"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

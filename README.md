@@ -1,98 +1,364 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Job Applications API
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+A production-grade RESTful API for managing job postings, applications, and recruitment workflows. Built as a portfolio project targeting a Junior API Developer role.
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+[![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat&logo=nestjs&logoColor=white)](https://nestjs.com)
+[![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org)
+[![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)](https://redis.io)
+[![Railway](https://img.shields.io/badge/Deployed_on-Railway-0B0D0E?style=flat&logo=railway&logoColor=white)](https://railway.app)
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## Live Demo
 
-## Project setup
+| Resource | URL |
+|---|---|
+| Base URL | `https://your-api.railway.app/api/v1` |
+| Swagger UI | `https://your-api.railway.app/api/docs` |
+| Postman Collection | [`/postman/JobApplicationsAPI.postman_collection.json`](./postman/JobApplicationsAPI.postman_collection.json) |
 
-```bash
-$ npm install
+---
+
+## What This API Does
+
+The API covers the full lifecycle of job recruitment:
+
+- **Employers** post jobs and register webhook URLs to receive real-time status notifications
+- **Recruiters** review applications and advance candidates through a status pipeline
+- **Applicants** browse open jobs and submit applications
+- **Super Admins** manage users and reassign roles
+
+Every status change fires a signed webhook event to the employer — simultaneously notifying them while the applicant sees the update on their own dashboard.
+
+---
+
+## Key Features
+
+| Feature | Implementation |
+|---|---|
+| JWT authentication | Access token (15 min) + refresh token (7 days) |
+| Token blacklisting | Redis — invalidates tokens on logout before expiry |
+| Four-role RBAC | `super_admin` · `employer` · `recruiter` · `applicant` |
+| Webhook delivery | HMAC-SHA256 signed payloads, delivery logs, single retry |
+| Rate limiting | Global (100 req/min) + strict auth routes (10 req/min) via Redis |
+| Pagination & filtering | `page`, `limit`, `title`, `location`, `status`, `postedAfter` |
+| Consistent response envelope | `{ data, meta, error }` on every endpoint |
+| Database migrations | TypeORM migrations — no `synchronize: true` |
+| OpenAPI docs | Auto-generated Swagger UI from NestJS decorators |
+
+---
+
+## Tech Stack
+
+```
+NestJS + TypeScript    — framework
+PostgreSQL             — primary database
+TypeORM                — ORM + migrations
+Redis                  — rate limiting + token blacklist
+Docker Compose         — local development environment
+Railway                — deployment
+Swagger / OpenAPI      — API documentation
+Jest                   — unit tests
 ```
 
-## Compile and run the project
+---
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js 20+
+- Docker + Docker Compose
+
+### 1. Clone the repo
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/richiekaroki/job-applications-api.git
+cd job-applications-api
 ```
 
-## Run tests
+### 2. Configure environment
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+cp .env.example .env
+# Edit .env with your values
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+### 3. Start PostgreSQL and Redis
 
 ```bash
-$ npm install -g @nestjs/mau
-$ mau deploy
+docker-compose up -d
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+### 4. Run migrations
 
-## Resources
+```bash
+npm run migration:run
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+### 5. Seed test data
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npm run seed
+```
 
-## Support
+### 6. Start the server
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npm run start:dev
+```
 
-## Stay in touch
+API is now running at `http://localhost:3000/api/v1`.  
+Swagger UI at `http://localhost:3000/api/docs`.
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+---
 
-## License
+## Environment Variables
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+See [`.env.example`](./.env.example) for the full list. Key variables:
+
+```bash
+NODE_ENV=development
+PORT=3000
+
+DB_HOST=localhost
+DB_PORT=5432
+DB_USERNAME=jobapi
+DB_PASSWORD=jobapi_pass
+DB_NAME=job_applications
+
+REDIS_HOST=localhost
+REDIS_PORT=6379
+
+JWT_SECRET=your_jwt_secret
+JWT_EXPIRES_IN=15m
+JWT_REFRESH_SECRET=your_refresh_secret
+JWT_REFRESH_EXPIRES_IN=7d
+
+WEBHOOK_SECRET=your_webhook_hmac_secret
+```
+
+---
+
+## API Overview
+
+All routes are prefixed `/api/v1`. Full documentation available in [Swagger UI](https://your-api.railway.app/api/docs).
+
+### Auth
+
+```
+POST   /auth/register        — create account
+POST   /auth/login           — returns access + refresh tokens
+POST   /auth/refresh         — issue new access token
+POST   /auth/logout          — blacklist token, revoke refresh
+```
+
+### Jobs
+
+```
+GET    /jobs                 — list jobs (paginated + filtered) — public
+GET    /jobs/:id             — single job — public
+POST   /jobs                 — create job — employer+
+PATCH  /jobs/:id             — update job — employer+
+DELETE /jobs/:id             — delete job — employer+
+```
+
+### Applications
+
+```
+POST   /jobs/:id/apply           — submit application — applicant
+GET    /applications             — all applications — recruiter+
+GET    /applications/mine        — own applications — applicant
+PATCH  /applications/:id/status  — update status → fires webhook — recruiter+
+```
+
+### Webhooks
+
+```
+POST   /webhooks/register    — save webhook URL — employer+
+GET    /webhooks/logs        — delivery history — employer+
+```
+
+### Admin
+
+```
+GET    /admin/users              — list all users — super_admin
+PATCH  /admin/users/:id/role     — reassign role — super_admin
+```
+
+---
+
+## Authentication
+
+The API uses JWT with refresh token rotation and Redis-backed token blacklisting.
+
+```bash
+# 1. Register
+POST /auth/register
+{ "email": "user@example.com", "password": "secure_pass", "fullName": "Jane Doe", "role": "applicant" }
+
+# 2. Login — returns access_token and refresh_token
+POST /auth/login
+{ "email": "user@example.com", "password": "secure_pass" }
+
+# 3. Use the access token on protected routes
+Authorization: Bearer <access_token>
+
+# 4. Refresh when the access token expires (15 min)
+POST /auth/refresh
+{ "refreshToken": "<refresh_token>" }
+
+# 5. Logout — token is blacklisted in Redis immediately
+POST /auth/logout
+```
+
+---
+
+## Response Format
+
+Every endpoint returns the same envelope shape:
+
+```json
+// Success
+{
+  "data": { ... },
+  "meta": { "page": 1, "limit": 10, "total": 84, "totalPages": 9 },
+  "error": null
+}
+
+// Error
+{
+  "data": null,
+  "meta": null,
+  "error": {
+    "code": "FORBIDDEN",
+    "message": "You do not have permission to perform this action.",
+    "statusCode": 403
+  }
+}
+```
+
+The `code` field is machine-readable for frontend `switch()` logic. The `message` is human-readable for toast notifications.
+
+---
+
+## Webhook System
+
+When a recruiter updates an application status, the employer receives a signed POST to their registered URL:
+
+```json
+{
+  "event": "application.status_changed",
+  "applicationId": "uuid",
+  "jobId": "uuid",
+  "applicantId": "uuid",
+  "status": "shortlisted",
+  "timestamp": "2026-06-13T10:00:00Z"
+}
+```
+
+Every delivery includes an `X-Webhook-Signature` header for verification:
+
+```
+X-Webhook-Signature: sha256=<HMAC-SHA256(payload, WEBHOOK_SECRET)>
+```
+
+Register a webhook URL:
+
+```bash
+POST /webhooks/register
+Authorization: Bearer <employer_token>
+{ "webhookUrl": "https://your-server.com/hooks/jobs" }
+```
+
+View delivery logs:
+
+```bash
+GET /webhooks/logs
+Authorization: Bearer <employer_token>
+```
+
+---
+
+## Application Status Pipeline
+
+```
+pending → reviewed → shortlisted → rejected
+                              ↘
+                            hired
+```
+
+Only `recruiter`, `employer`, and `super_admin` roles can advance status. Every transition fires a webhook event.
+
+---
+
+## Running Tests
+
+```bash
+# Unit tests
+npm run test
+
+# Test coverage
+npm run test:cov
+```
+
+---
+
+## Deployment — Railway
+
+The API is deployed on Railway with PostgreSQL and Redis as native plugins.
+
+```bash
+# Install Railway CLI
+npm install -g @railway/cli
+
+# Login and link project
+railway login
+railway link
+
+# Deploy
+railway up
+```
+
+See [`railway.toml`](./railway.toml) for build and deploy configuration.
+
+---
+
+## Project Structure
+
+```
+src/
+  auth/               ← JWT strategy, guards, refresh logic
+  users/              ← entity, service, admin controller
+  jobs/               ← CRUD, pagination, filters
+  applications/       ← apply, status update, RBAC
+  webhooks/           ← emitter, delivery, HMAC signing, logs
+  common/             ← decorators, guards, interceptors, filters
+  config/             ← env validation, DB/Redis config
+  app.module.ts
+  main.ts
+migrations/
+postman/
+docker-compose.yml
+railway.toml
+.env.example
+```
+
+---
+
+## System Design
+
+Full architecture decisions, schema, auth flow, webhook design, and frontend integration contract documented in:
+
+**[DESIGN.md](./DESIGN.md)**
+
+Covers: tech stack rationale · RBAC matrix · database schema · all API routes · JWT + Redis auth flow · webhook HMAC signing · rate limiting · response envelope · error codes · filtering params · field naming convention · CORS config · folder structure · Docker Compose · environment variables · Next.js integration contract · 5-day build plan.
+
+---
+
+## Author
+
+**Richard Kabue Karoki**  
+Backend / Full Stack Developer — Nairobi, Kenya  
+[github.com/richiekaroki](https://github.com/richiekaroki) · [linkedin.com/in/richard-karoki007](https://linkedin.com/in/richard-karoki007)
