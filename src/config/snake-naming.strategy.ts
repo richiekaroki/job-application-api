@@ -5,7 +5,13 @@ export class SnakeNamingStrategy
   implements NamingStrategyInterface
 {
   tableName(targetName: string, userSpecifiedName: string | undefined): string {
-    return userSpecifiedName ?? targetName.replace(/([A-Z])/g, '_$1').toLowerCase().replace(/^_/, '');
+    return (
+      userSpecifiedName ??
+      targetName
+        .replace(/([A-Z])/g, '_$1')
+        .toLowerCase()
+        .replace(/^_/, '')
+    );
   }
 
   columnName(propertyName: string, customName: string | undefined): string {
@@ -24,7 +30,11 @@ export class SnakeNamingStrategy
     return `${firstTableName}_${secondTableName}`;
   }
 
-  joinTableColumnName(tableName: string, propertyName: string, columnName?: string): string {
+  joinTableColumnName(
+    tableName: string,
+    propertyName: string,
+    columnName?: string,
+  ): string {
     return `${tableName}_${columnName ?? this.columnName(propertyName, undefined)}`;
   }
 }
