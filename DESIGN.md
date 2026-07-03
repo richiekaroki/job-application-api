@@ -359,8 +359,7 @@ Database columns follow PostgreSQL `snake_case` convention. API responses use Ja
 app.enableCors({
   origin: [
     'http://localhost:3000',           // Next.js local dev
-    'https://your-app.vercel.app',     // production frontend
-  ],
+'https://job-application-api-production.up.railway.app',     // production frontend  ],
   credentials: true,                   // required for httpOnly cookie auth
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
 });
@@ -468,20 +467,21 @@ AUTH_THROTTLE_LIMIT=10
 ### Base URL
 
 ```
-https://your-api.railway.app/api/v1
-```
+https://job-application-api-production.up.railway.app/api/v1```
 
 ### Auth header
 
 ```
+
 Authorization: Bearer <access_token>
+
 ```
 
 ### Swagger UI
 
 ```
-https://your-api.railway.app/api/docs
-```
+
+<https://job-application-api-production.up.railway.app/api/v1/docs```>
 
 ### Token strategy for Next.js
 
