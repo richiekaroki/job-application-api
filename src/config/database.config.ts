@@ -13,7 +13,6 @@ export const getDatabaseConfig = (
   database: configService.get<string>('DB_NAME'),
   namingStrategy: new SnakeNamingStrategy(),
   entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/../../migrations/*{.ts,.js}'],
   synchronize: false,
   logging: configService.get('NODE_ENV') === 'development',
 });

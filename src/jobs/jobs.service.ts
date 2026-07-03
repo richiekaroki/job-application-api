@@ -31,7 +31,14 @@ export class JobsService {
   }
 
   async findAll(query: QueryJobsDto) {
-    const { page = 1, limit = 10, title, location, status, postedAfter } = query;
+    const {
+      page = 1,
+      limit = 10,
+      title,
+      location,
+      status,
+      postedAfter,
+    } = query;
 
     const qb = this.jobsRepo
       .createQueryBuilder('job')
@@ -59,7 +66,9 @@ export class JobsService {
       qb.andWhere('job.status = :status', { status });
     }
     if (postedAfter) {
-      qb.andWhere('job.createdAt >= :postedAfter', { postedAfter: new Date(postedAfter) });
+      qb.andWhere('job.createdAt >= :postedAfter', {
+        postedAfter: new Date(postedAfter),
+      });
     }
 
     const total = await qb.getCount();
@@ -93,10 +102,7 @@ export class JobsService {
   async update(id: string, dto: UpdateJobDto, user: User): Promise<Job> {
     const job = await this.findOne(id);
 
-    if (
-      user.role !== UserRole.SUPER_ADMIN &&
-      job.postedBy.id !== user.id
-    ) {
+    if (user.role !== UserRole.SUPER_ADMIN && job.postedBy.id !== user.id) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
         message: 'You can only update your own job postings.',
@@ -110,10 +116,7 @@ export class JobsService {
   async remove(id: string, user: User): Promise<{ message: string }> {
     const job = await this.findOne(id);
 
-    if (
-      user.role !== UserRole.SUPER_ADMIN &&
-      job.postedBy.id !== user.id
-    ) {
+    if (user.role !== UserRole.SUPER_ADMIN && job.postedBy.id !== user.id) {
       throw new ForbiddenException({
         code: 'FORBIDDEN',
         message: 'You can only delete your own job postings.',
