@@ -65,7 +65,7 @@ export class ApplicationsService {
     return this.appRepo.save(application);
   }
 
-  async findAll(query: QueryApplicationsDto) {
+  async findAll(query: QueryApplicationsDto, user?: User) {
     const { page = 1, limit = 10, status } = query;
 
     const qb = this.appRepo
@@ -81,6 +81,7 @@ export class ApplicationsService {
         'job.id',
         'job.title',
         'job.location',
+        'job.postedBy',
         'applicant.id',
         'applicant.fullName',
         'applicant.email',
@@ -88,6 +89,10 @@ export class ApplicationsService {
         'reviewedBy.fullName',
       ])
       .orderBy('app.createdAt', 'DESC');
+
+    if (user && user.role === UserRole.EMPLOYER) {
+      qb.andWhere('job.postedBy.id = :userId', { userId: user.id });
+    }
 
     if (status) {
       qb.andWhere('app.status = :status', { status });
@@ -158,6 +163,16 @@ export class ApplicationsService {
       throw new NotFoundException({
         code: 'APPLICATION_NOT_FOUND',
         message: 'Application not found.',
+      });
+    }
+
+    if (
+      reviewer.role === UserRole.EMPLOYER &&
+      application.job.postedBy.id !== reviewer.id
+    ) {
+      throw new ForbiddenException({
+        code: 'FORBIDDEN',
+        message: 'You can only update applications for your own job postings.',
       });
     }
 

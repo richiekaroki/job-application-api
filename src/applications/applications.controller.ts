@@ -38,8 +38,8 @@ export class ApplicationsController {
   @Roles(UserRole.RECRUITER, UserRole.EMPLOYER, UserRole.SUPER_ADMIN)
   @ApiOperation({ summary: 'List all applications — recruiter+' })
   @ApiResponse({ status: 200, description: 'Applications retrieved.' })
-  findAll(@Query() query: QueryApplicationsDto) {
-    return this.applicationsService.findAll(query);
+  findAll(@Query() query: QueryApplicationsDto, @CurrentUser() user: User) {
+    return this.applicationsService.findAll(query, user);
   }
 
   @Get('mine')

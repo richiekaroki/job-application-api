@@ -5,7 +5,7 @@ services:
     plan: free
     region: oregon
     branch: main
-    buildCommand: npm install && npx nest build
+    buildCommand: npm install --include=dev && npm run build
     startCommand: npm run migration:run && npm run start:prod
     healthCheckPath: /api/v1/health
     autoDeploy: true
