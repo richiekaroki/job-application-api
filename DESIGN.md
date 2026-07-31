@@ -468,7 +468,7 @@ AUTH_THROTTLE_LIMIT=10
 ### Base URL
 
 ```
-https://your-app-name.onrender.com/api/v1
+https://job-application-api-17rf.onrender.com/api/v1
 ```
 
 ### Auth header
@@ -482,7 +482,7 @@ Authorization: Bearer <access_token>
 ### Swagger UI
 
 ```
-https://your-app-name.onrender.com/api/v1/docs
+https://job-application-api-17rf.onrender.com/api/v1/docs
 ```
 
 ### Token strategy for Next.js

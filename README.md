@@ -14,9 +14,9 @@ A production-grade RESTful API for managing job postings, applications, and recr
 
 | Resource | URL |
 |---|---|
-| Base URL | `https://your-app-name.onrender.com/api/v1` |
-| Swagger UI | `https://your-app-name.onrender.com/api/v1/docs` |
-| API Overview section | `[Swagger UI](https://your-app-name.onrender.com/api/v1/docs)` |
+| Base URL | `https://job-application-api-17rf.onrender.com/api/v1` |
+| Swagger UI | `https://job-application-api-17rf.onrender.com/api/v1/docs` |
+| API Overview section | `[Swagger UI](https://job-application-api-17rf.onrender.com/api/v1/docs)` |
 | Postman Collection | [`/postman/JobApplicationsAPI.postman_collection.json`](./postman/JobApplicationsAPI.postman_collection.json) |
 
 ---
@@ -145,7 +145,7 @@ WEBHOOK_SECRET=your_webhook_hmac_secret
 
 ## API Overview
 
-All routes are prefixed `/api/v1`. Full documentation available in [Swagger UI](https://your-app-name.onrender.com/api/v1/docs).
+All routes are prefixed `/api/v1`. Full documentation available in [Swagger UI](https://job-application-api-17rf.onrender.com/api/v1/docs).
 
 ### Auth
 
