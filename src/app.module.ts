@@ -1,10 +1,10 @@
 import { Module } from '@nestjs/common';
-import { APP_GUARD, APP_FILTER } from '@nestjs/core';
+import { APP_GUARD } from '@nestjs/core';
 import { ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
 import { EventEmitterModule } from '@nestjs/event-emitter';
-import { SentryModule, SentryGlobalFilter } from '@sentry/nestjs/setup';
+import { SentryModule } from '@sentry/nestjs/setup';
 import { AppConfigModule } from './config/config.module';
 import { getDatabaseConfig } from './config/database.config';
 import { HealthController } from './health.controller';
@@ -49,10 +49,6 @@ import { WebhooksModule } from './webhooks/webhooks.module';
   ],
   controllers: [HealthController],
   providers: [
-    {
-      provide: APP_FILTER,
-      useClass: SentryGlobalFilter,
-    },
     {
       provide: APP_GUARD,
       useClass: ThrottlerGuard,

@@ -8,7 +8,7 @@ import {
   HttpException,
 } from '@nestjs/common';
 import { Response } from 'express';
-import { SentryExceptionCaptured } from '@sentry/nestjs';
+import * as Sentry from '@sentry/nestjs';
 
 const STATUS_CODE_MAP: Record<number, string> = {
   400: 'VALIDATION_ERROR',
@@ -20,14 +20,19 @@ const STATUS_CODE_MAP: Record<number, string> = {
   500: 'INTERNAL_ERROR',
 };
 
-@Catch(HttpException)
+@Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  @SentryExceptionCaptured()
-  catch(exception: HttpException, host: ArgumentsHost) {
+  catch(exception: unknown, host: ArgumentsHost) {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
-    const statusCode = exception.getStatus();
-    const exceptionResponse = exception.getResponse() as any;
+
+    const statusCode =
+      exception instanceof HttpException ? exception.getStatus() : 500;
+
+    const exceptionResponse =
+      exception instanceof HttpException
+        ? (exception.getResponse() as any)
+        : null;
 
     const code =
       exceptionResponse?.code ||
@@ -37,7 +42,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const message =
       typeof exceptionResponse === 'string'
         ? exceptionResponse
-        : exceptionResponse?.message || 'An unexpected error occurred.';
+        : exceptionResponse?.message ||
+          (exception instanceof Error
+            ? exception.message
+            : 'An unexpected error occurred.');
+
+    if (statusCode >= 500) {
+      Sentry.captureException(exception);
+    }
 
     response.status(statusCode).json({
       data: null,
