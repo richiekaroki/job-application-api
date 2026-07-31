@@ -1,8 +1,8 @@
+import './instrument';
 import { NestFactory, Reflector } from '@nestjs/core';
 import { ValidationPipe, ClassSerializerInterceptor } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
-import * as Sentry from '@sentry/node';
 import { AppModule } from './app.module';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter';
 import { TransformInterceptor } from './common/interceptors/transform.interceptor';
@@ -10,12 +10,6 @@ import { TransformInterceptor } from './common/interceptors/transform.intercepto
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
   const configService = app.get(ConfigService);
-
-  Sentry.init({
-    dsn: configService.get<string>('SENTRY_DSN'),
-    environment: configService.get<string>('NODE_ENV', 'development'),
-    tracesSampleRate: 1.0,
-  });
 
   const prefix = configService.get<string>('API_PREFIX', 'api/v1');
   app.setGlobalPrefix(prefix);
