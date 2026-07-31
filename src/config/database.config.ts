@@ -16,6 +16,8 @@ export const getDatabaseConfig = (
       entities: [__dirname + '/../**/*.entity{.ts,.js}'],
       synchronize: false,
       logging: configService.get('NODE_ENV') === 'development',
+      retryAttempts: 10,
+      retryDelay: 3000,
     };
   }
 
@@ -30,5 +32,7 @@ export const getDatabaseConfig = (
     entities: [__dirname + '/../**/*.entity{.ts,.js}'],
     synchronize: false,
     logging: configService.get('NODE_ENV') === 'development',
+    retryAttempts: 10,
+    retryDelay: 3000,
   };
 };

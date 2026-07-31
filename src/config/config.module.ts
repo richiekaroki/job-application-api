@@ -34,6 +34,8 @@ import * as Joi from 'joi';
         THROTTLE_TTL: Joi.number().default(60000),
         THROTTLE_LIMIT: Joi.number().default(100),
         AUTH_THROTTLE_LIMIT: Joi.number().default(10),
+
+        SENTRY_DSN: Joi.string().optional(),
       }).custom((value, helpers) => {
         const hasDatabaseUrl = !!value.DATABASE_URL;
         const hasDbIndividual = value.DB_HOST && value.DB_USERNAME && value.DB_PASSWORD && value.DB_NAME;

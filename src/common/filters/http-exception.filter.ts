@@ -9,6 +9,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { Response } from 'express';
+import * as Sentry from '@sentry/node';
 
 const STATUS_CODE_MAP: Record<number, string> = {
   400: 'VALIDATION_ERROR',
@@ -37,6 +38,10 @@ export class HttpExceptionFilter implements ExceptionFilter {
       typeof exceptionResponse === 'string'
         ? exceptionResponse
         : exceptionResponse?.message || 'An unexpected error occurred.';
+
+    if (statusCode >= 500) {
+      Sentry.captureException(exception);
+    }
 
     response.status(statusCode).json({
       data: null,
