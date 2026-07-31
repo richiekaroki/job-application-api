@@ -6,7 +6,7 @@ A production-grade RESTful API for managing job postings, applications, and recr
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)](https://redis.io)
-[![Railway](https://img.shields.io/badge/Deployed_on-Railway-0B0D0E?style=flat&logo=railway&logoColor=white)](https://railway.app)
+[![Render](https://img.shields.io/badge/Deployed_on-Render-46E3B7?style=flat&logo=render&logoColor=white)](https://render.com)
 
 ---
 
@@ -14,9 +14,9 @@ A production-grade RESTful API for managing job postings, applications, and recr
 
 | Resource | URL |
 |---|---|
-| Base URL | ``https://job-application-api-production.up.railway.app/api/v1`` |
-| Swagger UI | ``https://job-application-api-production.up.railway.app/api/v1/docs`` |
-| API Overview section | ``[Swagger UI](https://job-application-api-production.up.railway.app/api/v1/docs)`` |
+| Base URL | `https://your-app-name.onrender.com/api/v1` |
+| Swagger UI | `https://your-app-name.onrender.com/api/v1/docs` |
+| API Overview section | `[Swagger UI](https://your-app-name.onrender.com/api/v1/docs)` |
 | Postman Collection | [`/postman/JobApplicationsAPI.postman_collection.json`](./postman/JobApplicationsAPI.postman_collection.json) |
 
 ---
@@ -52,16 +52,17 @@ Every status change fires a signed webhook event to the employer — simultaneou
 
 ## Tech Stack
 
-```
-NestJS + TypeScript    — framework
-PostgreSQL             — primary database
-TypeORM                — ORM + migrations
-Redis                  — rate limiting + token blacklist
-Docker Compose         — local development environment
-Railway                — deployment
-Swagger / OpenAPI      — API documentation
-Jest                   — unit tests
-```
+| Tech Stack | |
+|---|---|
+| Framework | NestJS |
+| Language | TypeScript |
+| Primary database | PostgreSQL |
+| ORM | TypeORM |
+| Cache / rate limiting | Redis |
+| Containerisation | Docker Compose |
+| Deployment | Render |
+| Docs | Swagger / OpenAPI |
+| Testing | Jest |
 
 ---
 
@@ -144,7 +145,7 @@ WEBHOOK_SECRET=your_webhook_hmac_secret
 
 ## API Overview
 
-All routes are prefixed `/api/v1`. Full documentation available in [Swagger UI](https://your-api.railway.app/api/docs).
+All routes are prefixed `/api/v1`. Full documentation available in [Swagger UI](https://your-app-name.onrender.com/api/v1/docs).
 
 ### Auth
 
@@ -306,23 +307,22 @@ npm run test:cov
 
 ---
 
-## Deployment — Railway
+## Deployment — Render
 
-The API is deployed on Railway with PostgreSQL and Redis as native plugins.
+The API is deployed on Render with Neon (PostgreSQL) and Upstash (Redis) as external services.
 
-```bash
-# Install Railway CLI
-npm install -g @railway/cli
+1. Push code to GitHub
+2. In Render dashboard: **New** → **Blueprint** → select your repo
+3. Render reads `render.yaml` and creates the service
+4. Add environment variables in Render dashboard:
+   - `DATABASE_URL` — from Neon
+   - `REDIS_URL` — from Upstash
+   - `JWT_SECRET` — generate a random 32+ char string
+   - `JWT_REFRESH_SECRET` — generate a different random 32+ char string
+   - `WEBHOOK_SECRET` — generate a random hex string
+5. Deploy — Render runs `npm install && npm run build` then `npm run migration:run && npm run start:prod`
 
-# Login and link project
-railway login
-railway link
-
-# Deploy
-railway up
-```
-
-See [`railway.toml`](./railway.toml) for build and deploy configuration.
+See [`render.yaml`](./render.yaml) for build and deploy configuration.
 
 ---
 
@@ -342,7 +342,7 @@ src/
 migrations/
 postman/
 docker-compose.yml
-railway.toml
+render.yaml
 .env.example
 ```
 

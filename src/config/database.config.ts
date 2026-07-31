@@ -4,15 +4,31 @@ import { SnakeNamingStrategy } from './snake-naming.strategy';
 
 export const getDatabaseConfig = (
   configService: ConfigService,
-): TypeOrmModuleOptions => ({
-  type: 'postgres',
-  host: configService.get<string>('DB_HOST'),
-  port: configService.get<number>('DB_PORT'),
-  username: configService.get<string>('DB_USERNAME'),
-  password: configService.get<string>('DB_PASSWORD'),
-  database: configService.get<string>('DB_NAME'),
-  namingStrategy: new SnakeNamingStrategy(),
-  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  synchronize: false,
-  logging: configService.get('NODE_ENV') === 'development',
-});
+): TypeOrmModuleOptions => {
+  const databaseUrl = configService.get<string>('DATABASE_URL');
+
+  if (databaseUrl) {
+    return {
+      type: 'postgres',
+      url: databaseUrl,
+      ssl: { rejectUnauthorized: false },
+      namingStrategy: new SnakeNamingStrategy(),
+      entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+      synchronize: false,
+      logging: configService.get('NODE_ENV') === 'development',
+    };
+  }
+
+  return {
+    type: 'postgres',
+    host: configService.get<string>('DB_HOST'),
+    port: configService.get<number>('DB_PORT'),
+    username: configService.get<string>('DB_USERNAME'),
+    password: configService.get<string>('DB_PASSWORD'),
+    database: configService.get<string>('DB_NAME'),
+    namingStrategy: new SnakeNamingStrategy(),
+    entities: [__dirname + '/../**/*.entity{.ts,.js}'],
+    synchronize: false,
+    logging: configService.get('NODE_ENV') === 'development',
+  };
+};

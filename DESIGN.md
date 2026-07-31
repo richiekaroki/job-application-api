@@ -1,7 +1,7 @@
 # Job Applications API — System Design Document
 
 **Role target:** Junior API Developer — WizGlobal  
-**Stack:** NestJS · TypeScript · PostgreSQL · Redis · Docker · Railway  
+**Stack:** NestJS · TypeScript · PostgreSQL · Redis · Docker · Render  
 **Deliverables:** GitHub repo · Live deployment · Swagger docs · Postman collection
 
 ---
@@ -24,7 +24,7 @@ The API covers the full lifecycle of job recruitment: employers post jobs, appli
 | ORM | TypeORM | Native NestJS integration, migration support |
 | Cache / rate limiting | Redis | Token blacklisting + throttler — directly showcases API security |
 | Containerisation | Docker Compose | Reproducible local environment |
-| Deployment | Railway | No cold starts, native PostgreSQL + Redis plugins |
+| Deployment | Render | Free tier, easy GitHub integration |
 | Docs | Swagger / OpenAPI | Self-documenting API, auto-generated from decorators |
 | Testing | Jest | Unit tests on auth and application status logic |
 | API testing | Postman | Collection with environment variables, expected responses |
@@ -359,7 +359,8 @@ Database columns follow PostgreSQL `snake_case` convention. API responses use Ja
 app.enableCors({
   origin: [
     'http://localhost:3000',           // Next.js local dev
-'https://job-application-api-production.up.railway.app',     // production frontend  ],
+    process.env.FRONTEND_URL,          // production frontend
+  ].filter(Boolean),
   credentials: true,                   // required for httpOnly cookie auth
   methods: ['GET', 'POST', 'PATCH', 'DELETE'],
 });
@@ -391,7 +392,7 @@ src/
 migrations/           ← TypeORM migration files (never synchronize: true)
 postman/              ← JobApplicationsAPI.postman_collection.json
 docker-compose.yml    ← postgres + redis services
-railway.toml          ← Railway deployment config
+render.yaml           ← Render deployment config
 .env.example          ← all required env vars documented
 ```
 
@@ -467,7 +468,8 @@ AUTH_THROTTLE_LIMIT=10
 ### Base URL
 
 ```
-https://job-application-api-production.up.railway.app/api/v1```
+https://your-app-name.onrender.com/api/v1
+```
 
 ### Auth header
 
@@ -480,8 +482,8 @@ Authorization: Bearer <access_token>
 ### Swagger UI
 
 ```
-
-<https://job-application-api-production.up.railway.app/api/v1/docs```>
+https://your-app-name.onrender.com/api/v1/docs
+```
 
 ### Token strategy for Next.js
 
@@ -518,7 +520,7 @@ Only `Recruiter`, `Employer`, and `Super Admin` can advance status. Every transi
 | 2 | Auth | Register, login, JWT access token, refresh token rotation, Redis blacklist, logout, `@Roles()` decorator, `RolesGuard` |
 | 3 | Core routes | Jobs CRUD, pagination + filtering, apply to job, status update, role-gated endpoints, global error/transform interceptors |
 | 4 | Advanced features | Rate limiting (global + auth-specific), webhook register, `EventEmitter2`, HMAC signing, delivery logs, single retry on failure |
-| 5 | Ship | Swagger/OpenAPI decorators, Postman collection (with env vars + example responses), README with integration docs, seed data script, deploy to Railway |
+| 5 | Ship | Swagger/OpenAPI decorators, Postman collection (with env vars + example responses), README with integration docs, seed data script, deploy to Render |
 
 ---
 
