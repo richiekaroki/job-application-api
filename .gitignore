@@ -33,5 +33,8 @@ coverage/
 # TypeScript incremental cache
 *.tsbuildinfo
 
+# Generated Swagger
+swagger.json
+
 # Postman (optional — remove this line if you want to commit the collection)
-# postman/
+postman/
