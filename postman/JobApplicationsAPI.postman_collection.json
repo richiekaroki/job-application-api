@@ -24,7 +24,7 @@
             "header": [{ "key": "Content-Type", "value": "application/json" }],
             "body": {
               "mode": "raw",
-              "raw": "{\n  \"email\": \"applicant@jobapi.dev\",\n  \"password\": \"Password123!\",\n  \"fullName\": \"John Applicant\",\n  \"role\": \"applicant\"\n}"
+              "raw": "{\n  \"email\": \"applicant@jobapi.dev\",\n  \"password\": \"Password123!\",\n  \"fullName\": \"John Applicant\"\n}"
             },
             "url": { "raw": "{{base_url}}/auth/register", "host": ["{{base_url}}"], "path": ["auth", "register"] }
           },
@@ -34,7 +34,7 @@
               "originalRequest": { "method": "POST", "url": { "raw": "{{base_url}}/auth/register" } },
               "status": "Created",
               "code": 201,
-              "body": "{\n  \"data\": {\n    \"email\": \"applicant@jobapi.dev\",\n    \"role\": \"applicant\",\n    \"fullName\": \"John Applicant\",\n    \"id\": \"uuid\",\n    \"createdAt\": \"2026-06-16T10:00:00.000Z\"\n  },\n  \"meta\": null,\n  \"error\": null\n}"
+              "body": "{\n  \"data\": {\n    \"email\": \"applicant@jobapi.dev\",\n    \"fullName\": \"John Applicant\",\n    \"id\": \"uuid\",\n    \"createdAt\": \"2026-06-16T10:00:00.000Z\"\n  },\n  \"meta\": null,\n  \"error\": null\n}"
             },
             {
               "name": "409 Email Taken",

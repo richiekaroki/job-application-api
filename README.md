@@ -1,12 +1,13 @@
 # Job Applications API
 
-A production-grade RESTful API for managing job postings, applications, and recruitment workflows. Built as a portfolio project targeting a Junior API Developer role.
+Production-grade RESTful API for managing job postings, applications, and recruitment workflows.
 
 [![NestJS](https://img.shields.io/badge/NestJS-E0234E?style=flat&logo=nestjs&logoColor=white)](https://nestjs.com)
 [![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat&logo=typescript&logoColor=white)](https://www.typescriptlang.org)
 [![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat&logo=postgresql&logoColor=white)](https://www.postgresql.org)
 [![Redis](https://img.shields.io/badge/Redis-DC382D?style=flat&logo=redis&logoColor=white)](https://redis.io)
-[![Render](https://img.shields.io/badge/Deployed_on-Render-46E3B7?style=flat&logo=render&logoColor=white)](https://render.com)
+[![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat&logo=docker&logoColor=white)](https://www.docker.com)
+[![CI](https://img.shields.io/badge/CI-GitHub_Actions-2088FF?style=flat&logo=githubactions&logoColor=white)](https://github.com/features/actions)
 
 ---
 
@@ -16,313 +17,97 @@ A production-grade RESTful API for managing job postings, applications, and recr
 |---|---|
 | Base URL | `https://job-application-api-17rf.onrender.com/api/v1` |
 | Swagger UI | `https://job-application-api-17rf.onrender.com/api/v1/docs` |
-| API Overview section | `[Swagger UI](https://job-application-api-17rf.onrender.com/api/v1/docs)` |
-| Postman Collection | [`/postman/JobApplicationsAPI.postman_collection.json`](./postman/JobApplicationsAPI.postman_collection.json) |
+| Postman Collection | [`./postman/JobApplicationsAPI.postman_collection.json`](./postman/JobApplicationsAPI.postman_collection.json) |
 
 ---
 
-## What This API Does
+## What It Does
 
-The API covers the full lifecycle of job recruitment:
-
-- **Employers** post jobs and register webhook URLs to receive real-time status notifications
-- **Recruiters** review applications and advance candidates through a status pipeline
-- **Applicants** browse open jobs and submit applications
-- **Super Admins** manage users and reassign roles
-
-Every status change fires a signed webhook event to the employer — simultaneously notifying them while the applicant sees the update on their own dashboard.
+Full lifecycle of job recruitment — employers post jobs, applicants apply, recruiters review and advance candidates through a status pipeline. Every status change fires a signed webhook to the employer.
 
 ---
 
-## Key Features
+## Features
 
-| Feature | Implementation |
+| Feature | Details |
 |---|---|
-| JWT authentication | Access token (15 min) + refresh token (7 days) |
-| Token blacklisting | Redis — invalidates tokens on logout before expiry |
-| Four-role RBAC | `super_admin` · `employer` · `recruiter` · `applicant` |
-| Webhook delivery | HMAC-SHA256 signed payloads, delivery logs, single retry |
-| Rate limiting | Global (100 req/min) + strict auth routes (10 req/min) via Redis |
-| Pagination & filtering | `page`, `limit`, `title`, `location`, `status`, `postedAfter` |
-| Consistent response envelope | `{ data, meta, error }` on every endpoint |
-| Database migrations | TypeORM migrations — no `synchronize: true` |
-| OpenAPI docs | Auto-generated Swagger UI from NestJS decorators |
+| JWT auth | Access + refresh tokens with Redis-backed blacklisting |
+| RBAC | 4 roles: `super_admin`, `employer`, `recruiter`, `applicant` |
+| Webhooks | HMAC-SHA256 signed payloads with delivery logs |
+| Rate limiting | Global + per-route throttling via Redis |
+| Pagination | Cursor-based with filtering by title, location, status |
+| Migrations | TypeORM — no `synchronize: true` in production |
+| CI/CD | Lint, build, test, security audit, Docker build |
+| Observability | Structured logging, Prometheus metrics, health checks |
 
 ---
 
-## Tech Stack
-
-| Tech Stack | |
-|---|---|
-| Framework | NestJS |
-| Language | TypeScript |
-| Primary database | PostgreSQL |
-| ORM | TypeORM |
-| Cache / rate limiting | Redis |
-| Containerisation | Docker Compose |
-| Deployment | Render |
-| Docs | Swagger / OpenAPI |
-| Testing | Jest |
-
----
-
-## Getting Started
-
-### Prerequisites
-
-- Node.js 20+
-- Docker + Docker Compose
-
-### 1. Clone the repo
+## Quick Start
 
 ```bash
 git clone https://github.com/richiekaroki/job-applications-api.git
 cd job-applications-api
+cp .env.example .env        # edit with your values
+docker-compose up -d        # start PostgreSQL + Redis
+npm run migration:run       # apply schema
+npm run seed                # create test users
+npm run start:dev           # http://localhost:3000/api/v1
 ```
 
-### 2. Configure environment
-
-```bash
-cp .env.example .env
-# Edit .env with your values
-```
-
-### 3. Start PostgreSQL and Redis
-
-```bash
-docker-compose up -d
-```
-
-### 4. Run migrations
-
-```bash
-npm run migration:run
-```
-
-### 5. Seed test data
-
-```bash
-npm run seed
-```
-
-### 6. Start the server
-
-```bash
-npm run start:dev
-```
-
-API is now running at `http://localhost:3000/api/v1`.  
-Swagger UI at `http://localhost:3000/api/docs`.
+See [`.env.example`](./.env.example) for all required variables.
 
 ---
 
-## Environment Variables
+## API Routes
 
-See [`.env.example`](./.env.example) for the full list. Key variables:
+All routes prefixed `/api/v1`. Full docs in [Swagger UI](https://job-application-api-17rf.onrender.com/api/v1/docs).
 
-```bash
-NODE_ENV=development
-PORT=3000
-
-DB_HOST=localhost
-DB_PORT=5432
-DB_USERNAME=jobapi
-DB_PASSWORD=jobapi_pass
-DB_NAME=job_applications
-
-REDIS_HOST=localhost
-REDIS_PORT=6379
-
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=15m
-JWT_REFRESH_SECRET=your_refresh_secret
-JWT_REFRESH_EXPIRES_IN=7d
-
-WEBHOOK_SECRET=your_webhook_hmac_secret
-```
-
----
-
-## API Overview
-
-All routes are prefixed `/api/v1`. Full documentation available in [Swagger UI](https://job-application-api-17rf.onrender.com/api/v1/docs).
-
-### Auth
-
-```
-POST   /auth/register        — create account
-POST   /auth/login           — returns access + refresh tokens
-POST   /auth/refresh         — issue new access token
-POST   /auth/logout          — blacklist token, revoke refresh
-```
-
-### Jobs
-
-```
-GET    /jobs                 — list jobs (paginated + filtered) — public
-GET    /jobs/:id             — single job — public
-POST   /jobs                 — create job — employer+
-PATCH  /jobs/:id             — update job — employer+
-DELETE /jobs/:id             — delete job — employer+
-```
-
-### Applications
-
-```
-POST   /jobs/:id/apply           — submit application — applicant
-GET    /applications             — all applications — recruiter+
-GET    /applications/mine        — own applications — applicant
-PATCH  /applications/:id/status  — update status → fires webhook — recruiter+
-```
-
-### Webhooks
-
-```
-POST   /webhooks/register    — save webhook URL — employer+
-GET    /webhooks/logs        — delivery history — employer+
-```
-
-### Admin
-
-```
-GET    /admin/users              — list all users — super_admin
-PATCH  /admin/users/:id/role     — reassign role — super_admin
-```
-
----
-
-## Authentication
-
-The API uses JWT with refresh token rotation and Redis-backed token blacklisting.
-
-```bash
-# 1. Register
-POST /auth/register
-{ "email": "user@example.com", "password": "secure_pass", "fullName": "Jane Doe", "role": "applicant" }
-
-# 2. Login — returns access_token and refresh_token
-POST /auth/login
-{ "email": "user@example.com", "password": "secure_pass" }
-
-# 3. Use the access token on protected routes
-Authorization: Bearer <access_token>
-
-# 4. Refresh when the access token expires (15 min)
-POST /auth/refresh
-{ "refreshToken": "<refresh_token>" }
-
-# 5. Logout — token is blacklisted in Redis immediately
-POST /auth/logout
-```
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| `POST` | `/auth/register` | — | Create account |
+| `POST` | `/auth/login` | — | Get access + refresh tokens |
+| `POST` | `/auth/refresh` | — | Rotate tokens |
+| `POST` | `/auth/logout` | Bearer | Blacklist token |
+| `GET` | `/jobs` | — | List jobs (paginated) |
+| `GET` | `/jobs/:id` | — | Get job details |
+| `POST` | `/jobs` | Employer+ | Create job |
+| `PATCH` | `/jobs/:id` | Employer+ | Update job |
+| `DELETE` | `/jobs/:id` | Employer+ | Delete job |
+| `POST` | `/jobs/:id/apply` | Applicant | Submit application |
+| `GET` | `/applications` | Recruiter+ | List all applications |
+| `GET` | `/applications/mine` | Applicant | Own applications |
+| `PATCH` | `/applications/:id/status` | Recruiter+ | Update status |
+| `POST` | `/webhooks/register` | Employer+ | Register webhook URL |
+| `GET` | `/webhooks/logs` | Employer+ | Delivery history |
+| `GET` | `/admin/users` | Super Admin | List all users |
+| `PATCH` | `/admin/users/:id/role` | Super Admin | Change user role |
 
 ---
 
 ## Response Format
 
-Every endpoint returns the same envelope shape:
-
 ```json
-// Success
 {
   "data": { ... },
   "meta": { "page": 1, "limit": 10, "total": 84, "totalPages": 9 },
   "error": null
 }
-
-// Error
-{
-  "data": null,
-  "meta": null,
-  "error": {
-    "code": "FORBIDDEN",
-    "message": "You do not have permission to perform this action.",
-    "statusCode": 403
-  }
-}
 ```
-
-The `code` field is machine-readable for frontend `switch()` logic. The `message` is human-readable for toast notifications.
 
 ---
 
-## Webhook System
+## Tech Stack
 
-When a recruiter updates an application status, the employer receives a signed POST to their registered URL:
+NestJS · TypeScript · PostgreSQL · TypeORM · Redis · Docker · Jest · GitHub Actions
 
-```json
-{
-  "event": "application.status_changed",
-  "applicationId": "uuid",
-  "jobId": "uuid",
-  "applicantId": "uuid",
-  "status": "shortlisted",
-  "timestamp": "2026-06-13T10:00:00Z"
-}
-```
+---
 
-Every delivery includes an `X-Webhook-Signature` header for verification:
-
-```
-X-Webhook-Signature: sha256=<HMAC-SHA256(payload, WEBHOOK_SECRET)>
-```
-
-Register a webhook URL:
+## Tests
 
 ```bash
-POST /webhooks/register
-Authorization: Bearer <employer_token>
-{ "webhookUrl": "https://your-server.com/hooks/jobs" }
+npm run test        # unit tests
+npm run test:e2e    # end-to-end tests
 ```
-
-View delivery logs:
-
-```bash
-GET /webhooks/logs
-Authorization: Bearer <employer_token>
-```
-
----
-
-## Application Status Pipeline
-
-```
-pending → reviewed → shortlisted → rejected
-                              ↘
-                            hired
-```
-
-Only `recruiter`, `employer`, and `super_admin` roles can advance status. Every transition fires a webhook event.
-
----
-
-## Running Tests
-
-```bash
-# Unit tests
-npm run test
-
-# Test coverage
-npm run test:cov
-```
-
----
-
-## Deployment — Render
-
-The API is deployed on Render with Neon (PostgreSQL) and Upstash (Redis) as external services.
-
-1. Push code to GitHub
-2. In Render dashboard: **New** → **Blueprint** → select your repo
-3. Render reads `render.yaml` and creates the service
-4. Add environment variables in Render dashboard:
-   - `DATABASE_URL` — from Neon
-   - `REDIS_URL` — from Upstash
-   - `JWT_SECRET` — generate a random 32+ char string
-   - `JWT_REFRESH_SECRET` — generate a different random 32+ char string
-   - `WEBHOOK_SECRET` — generate a random hex string
-5. Deploy — Render runs `npm install && npm run build` then `npm run migration:run && npm run start:prod`
-
-See [`render.yaml`](./render.yaml) for build and deploy configuration.
 
 ---
 
@@ -330,36 +115,27 @@ See [`render.yaml`](./render.yaml) for build and deploy configuration.
 
 ```
 src/
-  auth/               ← JWT strategy, guards, refresh logic
-  users/              ← entity, service, admin controller
-  jobs/               ← CRUD, pagination, filters
-  applications/       ← apply, status update, RBAC
-  webhooks/           ← emitter, delivery, HMAC signing, logs
-  common/             ← decorators, guards, interceptors, filters
-  config/             ← env validation, DB/Redis config
-  app.module.ts
-  main.ts
-migrations/
-postman/
-docker-compose.yml
-render.yaml
-.env.example
+├── auth/           JWT, guards, refresh logic
+├── users/          Entity, service, admin
+├── jobs/           CRUD, pagination, filters
+├── applications/   Apply, status updates, RBAC
+├── webhooks/       Delivery, HMAC signing, logs
+├── common/         Guards, decorators, middleware
+├── config/         Env validation, DB/Redis setup
+├── health.controller.ts
+└── main.ts
 ```
 
 ---
 
-## System Design
+## Architecture
 
-Full architecture decisions, schema, auth flow, webhook design, and frontend integration contract documented in:
-
-**[DESIGN.md](./DESIGN.md)**
-
-Covers: tech stack rationale · RBAC matrix · database schema · all API routes · JWT + Redis auth flow · webhook HMAC signing · rate limiting · response envelope · error codes · filtering params · field naming convention · CORS config · folder structure · Docker Compose · environment variables · Next.js integration contract · 5-day build plan.
+See [DESIGN.md](./DESIGN.md) for schema, auth flow, webhook design, and integration contracts.
 
 ---
 
 ## Author
 
-**Richard Kabue Karoki**  
-Backend / Full Stack Developer — Nairobi, Kenya  
+**Richard Kabue Karoki**
+Backend / Full Stack Developer — Nairobi, Kenya
 [github.com/richiekaroki](https://github.com/richiekaroki) · [linkedin.com/in/richard-karoki007](https://linkedin.com/in/richard-karoki007)
