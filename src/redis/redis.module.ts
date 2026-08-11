@@ -14,10 +14,10 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
         const redisUrl = configService.get<string>('REDIS_URL');
 
         if (redisUrl) {
+          const isTLS = redisUrl.startsWith('rediss://');
           return new Redis(redisUrl, {
             maxRetriesPerRequest: 3,
-            tls:
-              configService.get('NODE_ENV') === 'production' ? {} : undefined,
+            tls: isTLS ? {} : undefined,
           });
         }
 

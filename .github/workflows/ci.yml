@@ -93,6 +93,7 @@ jobs:
     name: Docker Build
     runs-on: ubuntu-latest
     needs: [lint, build, security, swagger]
+    steps:
       - uses: actions/checkout@v4
       - name: Build Docker image
         run: docker build -t job-applications-api:${{ github.sha }} .
