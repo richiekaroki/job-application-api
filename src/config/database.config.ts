@@ -6,12 +6,18 @@ export const getDatabaseConfig = (
   configService: ConfigService,
 ): TypeOrmModuleOptions => {
   const databaseUrl = configService.get<string>('DATABASE_URL');
+  const isProduction = configService.get('NODE_ENV') === 'production';
 
   if (databaseUrl) {
     return {
       type: 'postgres',
       url: databaseUrl,
-      ssl: { rejectUnauthorized: false },
+      ssl: isProduction
+        ? {
+            rejectUnauthorized: true,
+            ca: process.env.DB_CA_CERT,
+          }
+        : false,
       namingStrategy: new SnakeNamingStrategy(),
       entities: [__dirname + '/../**/*.entity{.ts,.js}'],
       synchronize: false,

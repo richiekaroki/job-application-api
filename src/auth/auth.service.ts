@@ -1,6 +1,3 @@
-/* eslint-disable @typescript-eslint/no-unsafe-argument */
-/* eslint-disable @typescript-eslint/no-unsafe-member-access */
-/* eslint-disable @typescript-eslint/no-unsafe-assignment */
 /* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Injectable,
@@ -16,12 +13,13 @@ import * as bcrypt from 'bcrypt';
 import { randomUUID } from 'crypto';
 import Redis from 'ioredis';
 
-import { User } from '../users/user.entity';
+import { User, UserRole } from '../users/user.entity';
 import { RefreshToken } from './refresh-token.entity';
 import { UsersService } from '../users/users.service';
 import { REDIS_CLIENT } from '../redis/redis.module';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { LoginAttemptService } from './login-attempt.service';
 
 @Injectable()
 export class AuthService {
@@ -34,6 +32,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
+    private readonly loginAttemptService: LoginAttemptService,
   ) {}
 
   // ─── Register ────────────────────────────────────────────────────────────────
@@ -47,12 +46,12 @@ export class AuthService {
       });
     }
 
-    const passwordHash = await bcrypt.hash(dto.password, 10);
+    const passwordHash = await bcrypt.hash(dto.password, 12);
     const user = this.usersRepo.create({
       email: dto.email,
       passwordHash,
       fullName: dto.fullName,
-      role: dto.role,
+      role: UserRole.APPLICANT,
     });
 
     await this.usersRepo.save(user);
@@ -63,8 +62,17 @@ export class AuthService {
   // ─── Login ───────────────────────────────────────────────────────────────────
 
   async login(dto: LoginDto) {
+    const locked = await this.loginAttemptService.isLocked(dto.email);
+    if (locked) {
+      throw new UnauthorizedException({
+        code: 'ACCOUNT_LOCKED',
+        message: 'Too many failed attempts. Please try again later.',
+      });
+    }
+
     const user = await this.usersService.findByEmail(dto.email);
     if (!user) {
+      await this.loginAttemptService.recordFailedAttempt(dto.email);
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
         message: 'Invalid email or password.',
@@ -73,11 +81,21 @@ export class AuthService {
 
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordValid) {
+      const { locked: isLocked } =
+        await this.loginAttemptService.recordFailedAttempt(dto.email);
+      if (isLocked) {
+        throw new UnauthorizedException({
+          code: 'ACCOUNT_LOCKED',
+          message: 'Account locked due to too many failed attempts.',
+        });
+      }
       throw new UnauthorizedException({
         code: 'INVALID_CREDENTIALS',
         message: 'Invalid email or password.',
       });
     }
+
+    await this.loginAttemptService.resetAttempts(dto.email);
 
     const tokens = await this.generateTokens(user);
     const { passwordHash: _, ...userResult } = user;
@@ -101,7 +119,6 @@ export class AuthService {
     }
 
     // Check DB — must exist and not be revoked
-    const tokenHash = await bcrypt.hash(refreshToken, 10);
     const stored = await this.refreshTokenRepo.findOne({
       where: { user: { id: payload.sub }, revoked: false },
       relations: { user: true },
@@ -109,6 +126,14 @@ export class AuthService {
     });
 
     if (!stored || stored.revoked) {
+      // TOKEN THEFT DETECTED: a previously revoked token was reused
+      // Revoke ALL tokens for this user (family revocation)
+      if (stored?.revoked) {
+        await this.refreshTokenRepo.update(
+          { user: { id: payload.sub } },
+          { revoked: true },
+        );
+      }
       throw new UnauthorizedException({
         code: 'REFRESH_TOKEN_INVALID',
         message: 'Refresh token has been revoked.',
@@ -118,6 +143,11 @@ export class AuthService {
     // Verify token matches stored hash
     const tokenMatches = await bcrypt.compare(refreshToken, stored.tokenHash);
     if (!tokenMatches) {
+      // Hash mismatch — possible token tampering, revoke entire family
+      await this.refreshTokenRepo.update(
+        { user: { id: payload.sub } },
+        { revoked: true },
+      );
       throw new UnauthorizedException({
         code: 'REFRESH_TOKEN_INVALID',
         message: 'Refresh token mismatch.',
@@ -161,11 +191,20 @@ export class AuthService {
   private async generateTokens(user: User) {
     const jti = randomUUID();
 
+    const accessExpiresIn = this.configService.get<string>(
+      'JWT_EXPIRES_IN',
+      '15m',
+    );
+    const refreshExpiresIn = this.configService.get<string>(
+      'JWT_REFRESH_EXPIRES_IN',
+      '7d',
+    );
+
     const accessToken = this.jwtService.sign(
       { sub: user.id, email: user.email, role: user.role, jti },
       {
         secret: this.configService.get<string>('JWT_SECRET'),
-        expiresIn: '15m',
+        expiresIn: accessExpiresIn as any,
       },
     );
 
@@ -173,14 +212,20 @@ export class AuthService {
       { sub: user.id },
       {
         secret: this.configService.get<string>('JWT_REFRESH_SECRET'),
-        expiresIn: '7d',
+        expiresIn: refreshExpiresIn as any,
       },
     );
 
     // Store hashed refresh token in DB
-    const tokenHash = await bcrypt.hash(refreshTokenValue, 10);
+    const tokenHash = await bcrypt.hash(refreshTokenValue, 12);
     const expiresAt = new Date();
-    expiresAt.setDate(expiresAt.getDate() + 7);
+    const refreshDays = parseInt(
+      this.configService.get<string>('JWT_REFRESH_EXPIRES_IN', '7d'),
+      10,
+    );
+    expiresAt.setDate(
+      expiresAt.getDate() + (isNaN(refreshDays) ? 7 : refreshDays),
+    );
 
     const refreshToken = this.refreshTokenRepo.create({
       user,

@@ -20,7 +20,7 @@ async function seed() {
   await jobRepo.query('DELETE FROM jobs');
   await userRepo.query('DELETE FROM users');
 
-  const passwordHash = await bcrypt.hash('Password123!', 10);
+  const passwordHash = await bcrypt.hash('Password123!', 12);
 
   // Create one user per role
   const superAdmin = userRepo.create({

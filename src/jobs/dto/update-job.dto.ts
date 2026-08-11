@@ -1,4 +1,10 @@
-import { IsString, IsNotEmpty, IsEnum, IsOptional } from 'class-validator';
+import {
+  IsString,
+  IsNotEmpty,
+  IsEnum,
+  IsOptional,
+  MaxLength,
+} from 'class-validator';
 import { ApiPropertyOptional } from '@nestjs/swagger';
 import { JobStatus } from '../job.entity';
 
@@ -7,18 +13,21 @@ export class UpdateJobDto {
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  @MaxLength(200)
   title?: string;
 
   @ApiPropertyOptional({ example: 'Updated description.' })
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  @MaxLength(10000)
   description?: string;
 
   @ApiPropertyOptional({ example: 'Remote' })
   @IsString()
   @IsNotEmpty()
   @IsOptional()
+  @MaxLength(200)
   location?: string;
 
   @ApiPropertyOptional({ enum: JobStatus, example: JobStatus.CLOSED })

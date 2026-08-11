@@ -11,11 +11,31 @@ export class UsersService {
   ) {}
 
   async findByEmail(email: string): Promise<User | null> {
-    return this.usersRepo.findOne({ where: { email } });
+    return this.usersRepo.findOne({
+      where: { email },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        passwordHash: true,
+        createdAt: true,
+      },
+    });
   }
 
   async findById(id: string): Promise<User> {
-    const user = await this.usersRepo.findOne({ where: { id } });
+    const user = await this.usersRepo.findOne({
+      where: { id },
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        webhookUrl: true,
+        createdAt: true,
+      },
+    });
     if (!user)
       throw new NotFoundException({
         code: 'USER_NOT_FOUND',
@@ -25,7 +45,15 @@ export class UsersService {
   }
 
   async findAll(): Promise<User[]> {
-    return this.usersRepo.find();
+    return this.usersRepo.find({
+      select: {
+        id: true,
+        email: true,
+        fullName: true,
+        role: true,
+        createdAt: true,
+      },
+    });
   }
 
   async updateRole(id: string, role: UserRole): Promise<User> {

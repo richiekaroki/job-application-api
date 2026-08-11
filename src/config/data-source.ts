@@ -5,13 +5,19 @@ import * as dotenv from 'dotenv';
 dotenv.config();
 
 const databaseUrl = process.env.DATABASE_URL;
+const isProduction = process.env.NODE_ENV === 'production';
 
 export const AppDataSource = new DataSource(
   databaseUrl
     ? {
         type: 'postgres',
         url: databaseUrl,
-        ssl: { rejectUnauthorized: false },
+        ssl: isProduction
+          ? {
+              rejectUnauthorized: true,
+              ca: process.env.DB_CA_CERT,
+            }
+          : false,
         namingStrategy: new SnakeNamingStrategy(),
         entities: ['src/**/*.entity{.ts,.js}'],
         migrations: ['migrations/*{.ts,.js}'],

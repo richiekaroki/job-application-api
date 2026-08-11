@@ -16,12 +16,15 @@ export const REDIS_CLIENT = 'REDIS_CLIENT';
         if (redisUrl) {
           return new Redis(redisUrl, {
             maxRetriesPerRequest: 3,
+            tls:
+              configService.get('NODE_ENV') === 'production' ? {} : undefined,
           });
         }
 
         return new Redis({
           host: configService.get<string>('REDIS_HOST', 'localhost'),
           port: configService.get<number>('REDIS_PORT', 6379),
+          password: configService.get<string>('REDIS_PASSWORD'),
           maxRetriesPerRequest: 3,
         });
       },

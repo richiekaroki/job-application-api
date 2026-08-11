@@ -23,6 +23,10 @@ import * as Joi from 'joi';
         REDIS_URL: Joi.string().optional(),
         REDIS_HOST: Joi.string().optional(),
         REDIS_PORT: Joi.number().default(6379),
+        REDIS_PASSWORD: Joi.string().optional(),
+
+        DB_CA_CERT: Joi.string().optional(),
+        ALLOWED_ORIGINS: Joi.string().optional(),
 
         JWT_SECRET: Joi.string().min(32).required(),
         JWT_EXPIRES_IN: Joi.string().default('15m'),
@@ -36,12 +40,17 @@ import * as Joi from 'joi';
         AUTH_THROTTLE_LIMIT: Joi.number().default(10),
 
         SENTRY_DSN: Joi.string().optional(),
-      }).custom((value, helpers) => {
+      }).custom((value: Record<string, unknown>, helpers) => {
         const hasDatabaseUrl = !!value.DATABASE_URL;
-        const hasDbIndividual = value.DB_HOST && value.DB_USERNAME && value.DB_PASSWORD && value.DB_NAME;
+        const hasDbIndividual =
+          value.DB_HOST &&
+          value.DB_USERNAME &&
+          value.DB_PASSWORD &&
+          value.DB_NAME;
         if (!hasDatabaseUrl && !hasDbIndividual) {
           return helpers.error('any.invalid', {
-            message: 'Provide either DATABASE_URL or all of DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME',
+            message:
+              'Provide either DATABASE_URL or all of DB_HOST, DB_USERNAME, DB_PASSWORD, DB_NAME',
           });
         }
         const hasRedisUrl = !!value.REDIS_URL;
