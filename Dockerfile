@@ -1,6 +1,9 @@
 # ─── Build Stage ──────────────────────────────────────────────────────────────
 FROM node:20-alpine AS builder
 
+# Build tools needed for native addons
+RUN apk add --no-cache python3 make g++
+
 WORKDIR /app
 
 # Install dependencies first (layer caching)
