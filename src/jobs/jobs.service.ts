@@ -57,7 +57,9 @@ export class JobsService {
       .orderBy('job.createdAt', 'DESC');
 
     if (title) {
-      qb.andWhere('job.title ILIKE :title', { title: `%${title}%` });
+      qb.andWhere('LOWER(job.title) LIKE LOWER(:title)', {
+        title: `%${title}%`,
+      });
     }
     if (location) {
       qb.andWhere('job.location = :location', { location });

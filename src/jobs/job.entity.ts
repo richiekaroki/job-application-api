@@ -31,7 +31,7 @@ export class Job {
   @Column()
   location: string;
 
-  @Column({ type: 'enum', enum: JobStatus, default: JobStatus.OPEN })
+  @Column({ type: 'varchar', length: 20, default: JobStatus.OPEN })
   status: JobStatus;
 
   @CreateDateColumn()

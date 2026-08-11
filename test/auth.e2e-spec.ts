@@ -63,11 +63,7 @@ describe('Auth (e2e)', () => {
       return request(app.getHttpServer())
         .post('/api/v1/auth/register')
         .send({ ...testUser, email: 'new@test.com', role: 'super_admin' })
-        .expect(201)
-        .expect((res) => {
-          // Role should be ignored, default to applicant
-          expect(res.body.data.role).toBe('applicant');
-        });
+        .expect(400);
     });
   });
 

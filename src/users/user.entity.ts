@@ -27,7 +27,7 @@ export class User {
   @Exclude()
   passwordHash: string;
 
-  @Column({ type: 'enum', enum: UserRole })
+  @Column({ type: 'varchar', length: 20 })
   role: UserRole;
 
   @Column()

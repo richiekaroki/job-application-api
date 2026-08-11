@@ -1,7 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { createTestApp } from './test-app.helper';
+import { createTestApp, seedUsers } from './test-app.helper';
+import { UserRole } from '../src/users/user.entity';
 
 describe('Jobs (e2e)', () => {
   let app: INestApplication<App>;
@@ -12,24 +13,25 @@ describe('Jobs (e2e)', () => {
   beforeAll(async () => {
     app = await createTestApp();
 
-    // Register employer
-    await request(app.getHttpServer()).post('/api/v1/auth/register').send({
-      email: 'employer@test.com',
-      password: 'Password123!',
-      fullName: 'Test Employer',
-    });
+    await seedUsers(app, [
+      {
+        email: 'employer@test.com',
+        password: 'Password123!',
+        fullName: 'Test Employer',
+        role: UserRole.EMPLOYER,
+      },
+      {
+        email: 'applicant@test.com',
+        password: 'Password123!',
+        fullName: 'Test Applicant',
+        role: UserRole.APPLICANT,
+      },
+    ]);
 
     const employerLogin = await request(app.getHttpServer())
       .post('/api/v1/auth/login')
       .send({ email: 'employer@test.com', password: 'Password123!' });
     employerToken = employerLogin.body.data.accessToken;
-
-    // Register applicant
-    await request(app.getHttpServer()).post('/api/v1/auth/register').send({
-      email: 'applicant@test.com',
-      password: 'Password123!',
-      fullName: 'Test Applicant',
-    });
 
     const applicantLogin = await request(app.getHttpServer())
       .post('/api/v1/auth/login')

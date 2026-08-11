@@ -36,8 +36,8 @@ export class Application {
   coverLetter: string;
 
   @Column({
-    type: 'enum',
-    enum: ApplicationStatus,
+    type: 'varchar',
+    length: 20,
     default: ApplicationStatus.PENDING,
   })
   status: ApplicationStatus;

@@ -1,7 +1,8 @@
 import { INestApplication } from '@nestjs/common';
 import request from 'supertest';
 import { App } from 'supertest/types';
-import { createTestApp } from './test-app.helper';
+import { createTestApp, seedUsers } from './test-app.helper';
+import { UserRole } from '../src/users/user.entity';
 
 describe('Applications (e2e)', () => {
   let app: INestApplication<App>;
@@ -14,34 +15,37 @@ describe('Applications (e2e)', () => {
   beforeAll(async () => {
     app = await createTestApp();
 
-    // Register employer
-    await request(app.getHttpServer()).post('/api/v1/auth/register').send({
-      email: 'app-employer@test.com',
-      password: 'Password123!',
-      fullName: 'App Employer',
-    });
+    await seedUsers(app, [
+      {
+        email: 'app-employer@test.com',
+        password: 'Password123!',
+        fullName: 'App Employer',
+        role: UserRole.EMPLOYER,
+      },
+      {
+        email: 'app-applicant@test.com',
+        password: 'Password123!',
+        fullName: 'App Applicant',
+        role: UserRole.APPLICANT,
+      },
+      {
+        email: 'app-recruiter@test.com',
+        password: 'Password123!',
+        fullName: 'App Recruiter',
+        role: UserRole.RECRUITER,
+      },
+    ]);
+
     const empLogin = await request(app.getHttpServer())
       .post('/api/v1/auth/login')
       .send({ email: 'app-employer@test.com', password: 'Password123!' });
     employerToken = empLogin.body.data.accessToken;
 
-    // Register applicant
-    await request(app.getHttpServer()).post('/api/v1/auth/register').send({
-      email: 'app-applicant@test.com',
-      password: 'Password123!',
-      fullName: 'App Applicant',
-    });
     const appLogin = await request(app.getHttpServer())
       .post('/api/v1/auth/login')
       .send({ email: 'app-applicant@test.com', password: 'Password123!' });
     applicantToken = appLogin.body.data.accessToken;
 
-    // Register recruiter
-    await request(app.getHttpServer()).post('/api/v1/auth/register').send({
-      email: 'app-recruiter@test.com',
-      password: 'Password123!',
-      fullName: 'App Recruiter',
-    });
     const recLogin = await request(app.getHttpServer())
       .post('/api/v1/auth/login')
       .send({ email: 'app-recruiter@test.com', password: 'Password123!' });
