@@ -20,6 +20,13 @@ import { REDIS_CLIENT } from '../redis/redis.module';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { LoginAttemptService } from './login-attempt.service';
+import { AuthAuditService } from './auth-audit.service';
+import { AuthEvent } from './auth-audit-log.entity';
+
+export interface RequestContext {
+  ipAddress?: string;
+  userAgent?: string;
+}
 
 @Injectable()
 export class AuthService {
@@ -33,6 +40,7 @@ export class AuthService {
     private readonly configService: ConfigService,
     @Inject(REDIS_CLIENT) private readonly redis: Redis,
     private readonly loginAttemptService: LoginAttemptService,
+    private readonly auditService: AuthAuditService,
   ) {}
 
   // ─── Register ────────────────────────────────────────────────────────────────

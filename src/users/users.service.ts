@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User, UserRole } from './user.entity';
@@ -56,8 +60,34 @@ export class UsersService {
     });
   }
 
-  async updateRole(id: string, role: UserRole): Promise<User> {
+  async updateRole(
+    id: string,
+    role: UserRole,
+    performedBy: string,
+  ): Promise<User> {
     const user = await this.findById(id);
+
+    // Prevent self-demotion
+    if (user.id === performedBy) {
+      throw new ForbiddenException({
+        code: 'CANNOT_CHANGE_OWN_ROLE',
+        message: 'You cannot change your own role.',
+      });
+    }
+
+    // Prevent demoting the last super_admin
+    if (user.role === UserRole.SUPER_ADMIN && role !== UserRole.SUPER_ADMIN) {
+      const adminCount = await this.usersRepo.count({
+        where: { role: UserRole.SUPER_ADMIN },
+      });
+      if (adminCount <= 1) {
+        throw new ForbiddenException({
+          code: 'LAST_ADMIN',
+          message: 'Cannot demote the last super_admin.',
+        });
+      }
+    }
+
     user.role = role;
     return this.usersRepo.save(user);
   }

@@ -10,7 +10,8 @@ import { UpdateRoleDto } from './dto/update-role.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { RolesGuard } from '../common/guards/roles.guard';
 import { Roles } from '../common/decorators/roles.decorator';
-import { UserRole } from '../users/user.entity';
+import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { User, UserRole } from '../users/user.entity';
 
 @ApiTags('admin')
 @Controller('admin')
@@ -31,7 +32,15 @@ export class AdminController {
   @ApiOperation({ summary: 'Reassign a user role — super_admin only' })
   @ApiResponse({ status: 200, description: 'Role updated.' })
   @ApiResponse({ status: 404, description: 'User not found.' })
-  updateRole(@Param('id') id: string, @Body() dto: UpdateRoleDto) {
-    return this.usersService.updateRole(id, dto.role);
+  @ApiResponse({
+    status: 403,
+    description: 'Cannot change own role or demote last admin.',
+  })
+  updateRole(
+    @Param('id') id: string,
+    @Body() dto: UpdateRoleDto,
+    @CurrentUser() currentUser: User,
+  ) {
+    return this.usersService.updateRole(id, dto.role, currentUser.id);
   }
 }

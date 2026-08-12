@@ -7,18 +7,26 @@ import { AuthController } from './auth.controller';
 import { JwtStrategy } from './jwt.strategy';
 import { JwtAuthGuard } from './jwt-auth.guard';
 import { LoginAttemptService } from './login-attempt.service';
+import { AuthAuditService } from './auth-audit.service';
 import { User } from '../users/user.entity';
 import { RefreshToken } from './refresh-token.entity';
+import { AuthAuditLog } from './auth-audit-log.entity';
 import { UsersModule } from '../users/users.module';
 
 @Module({
   imports: [
-    TypeOrmModule.forFeature([User, RefreshToken]),
+    TypeOrmModule.forFeature([User, RefreshToken, AuthAuditLog]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.register({}),
     UsersModule,
   ],
-  providers: [AuthService, JwtStrategy, JwtAuthGuard, LoginAttemptService],
+  providers: [
+    AuthService,
+    JwtStrategy,
+    JwtAuthGuard,
+    LoginAttemptService,
+    AuthAuditService,
+  ],
   controllers: [AuthController],
   exports: [JwtAuthGuard, JwtStrategy],
 })

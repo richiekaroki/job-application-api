@@ -82,7 +82,11 @@ describe('UsersService', () => {
         role: UserRole.EMPLOYER,
       });
 
-      const result = await service.updateRole('uuid-1', UserRole.EMPLOYER);
+      const result = await service.updateRole(
+        'uuid-1',
+        UserRole.EMPLOYER,
+        'admin-1',
+      );
       expect(result.role).toBe(UserRole.EMPLOYER);
     });
   });

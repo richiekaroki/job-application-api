@@ -7,6 +7,7 @@ import { AuthService } from './auth.service';
 import { UsersService } from '../users/users.service';
 import { LoginAttemptService } from './login-attempt.service';
 import { User, UserRole } from '../users/user.entity';
+import { AuthAuditService } from './auth-audit.service';
 import { RefreshToken } from './refresh-token.entity';
 import { REDIS_CLIENT } from '../redis/redis.module';
 
@@ -72,6 +73,11 @@ describe('AuthService', () => {
     resetAttempts: jest.fn().mockResolvedValue(undefined),
   };
 
+  const mockAuthAuditService = {
+    log: jest.fn().mockResolvedValue(undefined),
+    findByEmail: jest.fn().mockResolvedValue([]),
+  };
+
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -86,6 +92,7 @@ describe('AuthService', () => {
         { provide: ConfigService, useValue: mockConfigService },
         { provide: REDIS_CLIENT, useValue: mockRedis },
         { provide: LoginAttemptService, useValue: mockLoginAttemptService },
+        { provide: AuthAuditService, useValue: mockAuthAuditService },
       ],
     }).compile();
 
