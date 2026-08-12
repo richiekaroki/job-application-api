@@ -16,7 +16,7 @@ Production-grade RESTful API for managing job postings, applications, and recrui
 | Resource | URL |
 |---|---|
 | Base URL | `https://job-application-api-17rf.onrender.com/api/v1` |
-| Swagger UI | `https://job-application-api-17rf.onrender.com/api/v1/docs` |
+| Swagger UI (local only) | `http://localhost:3000/api/v1/docs` |
 | Postman Collection | [`./postman/JobApplicationsAPI.postman_collection.json`](./postman/JobApplicationsAPI.postman_collection.json) |
 
 ---
@@ -60,7 +60,7 @@ See [`.env.example`](./.env.example) for all required variables.
 
 ## API Routes
 
-All routes prefixed `/api/v1`. Full docs in [Swagger UI](https://job-application-api-17rf.onrender.com/api/v1/docs).
+All routes prefixed `/api/v1`. Full docs available locally via [Swagger UI](http://localhost:3000/api/v1/docs) (disabled in production — use the [Postman Collection](./postman/JobApplicationsAPI.postman_collection.json) for the live API).
 
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|

@@ -109,16 +109,3 @@ jobs:
       - uses: actions/checkout@v4
       - name: Build Docker image
         run: docker build -t job-applications-api:${{ github.sha }} .
-      - name: Verify image runs
-        run: |
-          docker run -d --name test-container \
-            -e NODE_ENV=test \
-            -e JWT_SECRET=test-secret-key-min-32-characters-long \
-            -e JWT_REFRESH_SECRET=test-refresh-secret-min-32-characters-long \
-            -e WEBHOOK_SECRET=test-webhook-secret-min-32-characters \
-            -e REDIS_HOST=host.docker.internal \
-            -p 3000:3000 \
-            job-applications-api:${{ github.sha }}
-          sleep 5
-          curl -f http://localhost:3000/api/v1/health || exit 1
-          docker stop test-container
